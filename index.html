@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Psicotécnica de Lahy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f7fa;
+            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            color: #2c3e50;
+            letter-spacing: -0.8px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #6c757d;
+            margin-bottom: 4rem;
+            font-weight: 400;
+        }
+
+        .versions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .version {
+            background: white;
+            padding: 4rem 3rem;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #e1e8ed;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .version::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #007bff, #6610f2);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .version:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+        }
+
+        .version:hover::before {
+            transform: scaleX(1);
+        }
+
+        .version-icon {
+            margin-bottom: 1.5rem;
+        }
+
+        .version-icon svg {
+            width: 48px;
+            height: 48px;
+        }
+
+        .version-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2c3e50;
+            letter-spacing: -0.4px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+                margin-bottom: 3rem;
+            }
+
+            .versions {
+                grid-template-columns: 1fr;
+                gap: 2.5rem;
+            }
+
+            .version {
+                padding: 3rem 2rem;
+            }
+
+            .version-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 20px 15px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .version {
+                padding: 2.5rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Prueba Psicotécnica de Lahy</h1>
+        <p class="subtitle">
+            Compara diferentes mecánicas de interacción en pruebas de coordinación,
+            hecho para evaluar habilidades cognitivas y motoras de usuarios de distintas edades.
+        </p>
+
+        <div class="versions">
+            <div class="version" onclick="window.location.href='versionA.html'">
+                <div class="version-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" fill="#FFC107"/>
+                        <path d="M 12 2 A 10 10 0 0 0 12 22 L 12 12 Z" fill="#2c3e50" transform="rotate(20 12 12)"/>
+                        <circle cx="8" cy="8" r="1.5" fill="#00E5FF"/>
+                    </svg>
+                </div>
+                <div class="version-title">Puntos que Giran</div>
+            </div>
+
+            <div class="version" onclick="window.location.href='versionB.html'">
+                <div class="version-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" fill="#FFC107"/>
+                        <path d="M 12 4 A 8 8 0 0 1 20 12" stroke="#2c3e50" stroke-width="4" fill="none"/>
+                        <circle cx="18" cy="6" r="1.5" fill="#00E5FF"/>
+                    </svg>
+                </div>
+                <div class="version-title">Tapa que Gira</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

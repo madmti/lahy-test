@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Versión A - Juego de Puntos</title>
+    <style>
+        :root {
+            --bg-color: #e0e0e0;
+            --card-bg: #ffffff;
+            --primary: #333;
+            --accent: #FFC107;
+            --target: #00E5FF;
+            --success: #4CAF50;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding-top: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            width: 90%;
+            max-width: 600px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            background: #222;
+        }
+
+        canvas {
+            display: block;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-start {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-start:hover {
+            background-color: #555;
+        }
+
+        .btn-back {
+            background-color: #ddd;
+            color: #333;
+        }
+
+        .btn-back:hover {
+            background-color: #ccc;
+        }
+
+        .feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--success);
+            text-shadow: 2px 2px 0 #000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <span id="timerDisplay">Tiempo: 30s</span>
+            <span id="scoreDisplay">Aciertos: 0</span>
+        </div>
+
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" width="500" height="500"></canvas>
+            <div id="feedback" class="feedback">¡BIEN!</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-back" onclick="window.location.href='index.html'">← Volver al Menú</button>
+            <button id="startBtn" class="btn-start" onclick="startGame()">Comenzar Prueba</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        const CONFIG = {
+            RPM: 30,
+            DURATION: 30,
+            ORBIT_RADIUS: 160,
+            DOT_RADIUS: 20,
+            HIT_RADIUS: 35
+        };
+
+        // --- VARIABLES DE ESTADO ---
+        let isPlaying = false;
+        let score = 0;
+        let timeLeft = CONFIG.DURATION;
+        let angle = 0;
+        let lastTime = 0;
+        let animationId = null;
+        let timerInterval = null;
+
+        // --- ELEMENTOS DOM ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const timerEl = document.getElementById('timerDisplay');
+        const scoreEl = document.getElementById('scoreDisplay');
+        const startBtn = document.getElementById('startBtn');
+        const feedbackEl = document.getElementById('feedback');
+
+        // Posiciones de los puntos (equidistantes: 0, 120, 240 grados)
+        const DOT_ANGLES = [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3];
+
+        // --- LÓGICA DEL JUEGO ---
+        function startGame() {
+            if (isPlaying) return;
+            resetGame();
+            isPlaying = true;
+            startBtn.disabled = true;
+            startBtn.innerText = "Prueba en curso...";
+            lastTime = performance.now();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = `Tiempo: ${timeLeft}s`;
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function stopGame() {
+            isPlaying = false;
+            clearInterval(timerInterval);
+            cancelAnimationFrame(animationId);
+            startBtn.disabled = false;
+            startBtn.innerText = "Comenzar Prueba";
+        }
+
+        function endGame() {
+            stopGame();
+            alert(`¡Tiempo terminado!\nPuntuación final: ${score} aciertos.`);
+            startBtn.innerText = "Intentar de nuevo";
+        }
+
+        function resetGame() {
+            score = 0;
+            timeLeft = CONFIG.DURATION;
+            angle = 0;
+            scoreEl.innerText = `Aciertos: 0`;
+            timerEl.innerText = `Tiempo: ${CONFIG.DURATION}s`;
+        }
+
+        function gameLoop(timestamp) {
+            if (!isPlaying) return;
+
+            const dt = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+
+            const speed = Math.PI; // Para 30 RPM
+            angle += speed * dt;
+
+            draw();
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        // --- RENDERIZADO ---
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            // Fondo general
+            ctx.fillStyle = '#222';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dibujar puntos rotativos
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(angle);
+
+            DOT_ANGLES.forEach(dotAngle => {
+                ctx.beginPath();
+                ctx.arc(
+                    Math.cos(dotAngle) * CONFIG.ORBIT_RADIUS,
+                    Math.sin(dotAngle) * CONFIG.ORBIT_RADIUS,
+                    CONFIG.DOT_RADIUS, 0, Math.PI * 2
+                );
+                ctx.fillStyle = '#00E5FF';
+                ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = 'white';
+                ctx.stroke();
+            });
+            ctx.restore();
+
+            // Máscara estática (ventana superior)
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(0, 0, canvas.width, canvas.height);
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, 240, -Math.PI/3, Math.PI/1.5, true);
+            ctx.closePath();
+            ctx.fillStyle = '#FFC107';
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // --- CONTROL DE CLIC ---
+        canvas.addEventListener('pointerdown', (e) => {
+            if (!isPlaying) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            const mx = (e.clientX - rect.left) * scaleX;
+            const my = (e.clientY - rect.top) * scaleY;
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const distFromCenter = Math.sqrt((mx - cx)**2 + (my - cy)**2);
+
+            if (distFromCenter < CONFIG.ORBIT_RADIUS - CONFIG.HIT_RADIUS ||
+                distFromCenter > CONFIG.ORBIT_RADIUS + CONFIG.HIT_RADIUS) return;
+
+            // Verificar si clicó en un punto rotado y visible
+            const hit = DOT_ANGLES.some(baseAngle => {
+                const currentPointAngle = baseAngle + angle;
+                const px = cx + Math.cos(currentPointAngle) * CONFIG.ORBIT_RADIUS;
+                const py = cy + Math.sin(currentPointAngle) * CONFIG.ORBIT_RADIUS;
+                const dist = Math.sqrt((mx - px)**2 + (my - py)**2);
+
+                return (dist < CONFIG.HIT_RADIUS && my < cy + 20);
+            });
+
+            if (hit) {
+                score++;
+                scoreEl.innerText = `Aciertos: ${score}`;
+                showFeedback();
+            }
+        });
+
+        function showFeedback() {
+            feedbackEl.style.opacity = 1;
+            feedbackEl.style.transform = 'translate(-50%, -50%) scale(1.2)';
+            setTimeout(() => {
+                feedbackEl.style.transform = 'translate(-50%, -50%) scale(1)';
+                feedbackEl.style.opacity = 0;
+            }, 400);
+        }
+
+        // Dibujo inicial
+        draw();
+    </script>
+</body>
+</html>
