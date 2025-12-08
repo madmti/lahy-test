@@ -48,6 +48,11 @@
             margin-bottom: 20px;
         }
 
+        .stats-container {
+            display: flex;
+            gap: 30px;
+        }
+
         .canvas-wrapper {
             position: relative;
             border-radius: 50%;
@@ -119,7 +124,10 @@
     <div class="game-container">
         <div class="game-header">
             <span id="timerDisplay">Tiempo: 30s</span>
-            <span id="scoreDisplay">Aciertos: 0</span>
+            <div class="stats-container">
+                <span id="scoreDisplay">Aciertos: 0</span>
+                <span id="missesDisplay">Fallos: 0</span>
+            </div>
         </div>
 
         <div class="canvas-wrapper">
@@ -146,6 +154,7 @@
         // --- VARIABLES DE ESTADO ---
         let isPlaying = false;
         let score = 0;
+        let misses = 0;
         let timeLeft = CONFIG.DURATION;
         let angle = 0;
         let lastTime = 0;
@@ -157,6 +166,7 @@
         const ctx = canvas.getContext('2d');
         const timerEl = document.getElementById('timerDisplay');
         const scoreEl = document.getElementById('scoreDisplay');
+        const missesEl = document.getElementById('missesDisplay');
         const startBtn = document.getElementById('startBtn');
         const feedbackEl = document.getElementById('feedback');
 
@@ -197,9 +207,11 @@
 
         function resetGame() {
             score = 0;
+            misses = 0;
             timeLeft = CONFIG.DURATION;
             angle = 0;
             scoreEl.innerText = `Aciertos: 0`;
+            missesEl.innerText = `Fallos: 0`;
             timerEl.innerText = `Tiempo: ${CONFIG.DURATION}s`;
         }
 
@@ -291,6 +303,8 @@
                 scoreEl.innerText = `Aciertos: ${score}`;
                 showFeedback(true);
             } else {
+                misses++;
+                missesEl.innerText = `Fallos: ${misses}`;
                 showFeedback(false);
             }
         });
