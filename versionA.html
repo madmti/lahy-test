@@ -109,6 +109,10 @@
             pointer-events: none;
             transition: opacity 0.3s;
         }
+
+        .feedback.error {
+            color: #f44336;
+        }
     </style>
 </head>
 <body>
@@ -285,11 +289,21 @@
             if (hit) {
                 score++;
                 scoreEl.innerText = `Aciertos: ${score}`;
-                showFeedback();
+                showFeedback(true);
+            } else {
+                showFeedback(false);
             }
         });
 
-        function showFeedback() {
+        function showFeedback(isSuccess) {
+            if (isSuccess) {
+                feedbackEl.textContent = '¡BIEN!';
+                feedbackEl.classList.remove('error');
+            } else {
+                feedbackEl.textContent = '¡MAL!';
+                feedbackEl.classList.add('error');
+            }
+            
             feedbackEl.style.opacity = 1;
             feedbackEl.style.transform = 'translate(-50%, -50%) scale(1.2)';
             setTimeout(() => {
